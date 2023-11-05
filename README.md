@@ -1,6 +1,6 @@
 # Bmpheader
 The first library known that will display your algorithm(e.g. Perlin) in 8-bit RGBA channels, and it doesn't require a Ph.D. in mathematics to understand it.  
-Made in C++14.  
+Made in C++14. It might have bugs, so it's best to use 1:1 ratio to draw your image.  
 
 ## Usage
 You can set the pixel by gray, Col8, or r, g, b, and a uint8_t with set_pixel(),  
