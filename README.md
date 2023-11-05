@@ -9,7 +9,7 @@ or you can set it by reference from "*px_ptr(x, y)".
 
 The Col8 is a union. To set the color with .rgba, use this format "0xrrggbbaa".  
 You can do it with .r, .g, .b, and .a as well.
-```
+```C++
 class Bmp {
 public:
 	union Col8 {
@@ -24,7 +24,7 @@ public:
 }
 ```
 
-```
+```C++
 #include "bmpheader.hpp"
 
 
