@@ -8,7 +8,8 @@ void unit_test() {
 		bmp.save_sample();
 
 		bmp.clear_pixel();
-		bmp.read("sample.bmp");
+		if (not bmp.read("sample.bmp"))
+			std::cerr << "Reading sample.bmp failed!" << std::endl;
 		bmp.save("read.bmp");
 	}
 

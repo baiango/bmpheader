@@ -2,7 +2,6 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include <cassert>
 
 
 // You can set the pixel by gray, Col8, or r, g, b, and a uint8_t with set_pixel(),
@@ -160,7 +159,8 @@ public:
 		file.read((char *)&header, 14);
 		file.read((char *)&info, 40);
 
-		if (header.signature == BM_signature) {
+		if (header.signature[0] != BM_signature[0]
+			&& header.signature[1] != BM_signature[1]) {
 			std::cerr << "Not a BMP file." << std::endl;
 			return false;
 		}
