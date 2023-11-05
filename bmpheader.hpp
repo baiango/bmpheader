@@ -99,10 +99,17 @@ public:
 
 	void set_pixel(
 		int32_t x, int32_t y,
-		uint8_t red, uint8_t green, uint8_t blue,
-		uint8_t alpha = 0
+		uint8_t red, uint8_t green, uint8_t blue
 	) {
 		pixels[x][y] = {red, green, blue, pixels[x][y].a};
+	}
+
+	void set_pixel(
+		int32_t x, int32_t y,
+		uint8_t red, uint8_t green, uint8_t blue,
+		uint8_t alpha
+	) {
+		pixels[x][y] = {red, green, blue, alpha};
 	}
 
 	Bmp &set_data_cursor_position(int32_t new_x, int32_t new_y) {
