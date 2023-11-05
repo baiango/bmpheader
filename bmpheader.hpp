@@ -165,6 +165,16 @@ public:
 			return false;
 		}
 
+		if (info.color_depth != 8 * 4) {
+			std::cerr << "Not a 32-bit or RGBA BMP file." << std::endl;
+			return false;
+		}
+
+		if (info.compress_method) {
+			std::cerr << "Not an uncompressed BMP file." << std::endl;
+			return false;
+		}
+
 		file.seekg(header.pixel_data_offset);
 		for (int32_t x = 0; x < get_width(); x++)
 			for (int32_t y = 0; y < get_height(); y++)
