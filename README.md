@@ -15,44 +15,28 @@ public:
 	union Col8 {
 		struct {
 			uint8_t r;
-			uint8_t	g;
+			uint8_t g;
 			uint8_t b;
 			uint8_t a;
 		};
+		struct {
+			uint8_t rgb[3];
+		};
 		uint32_t rgba = 0x202020ff;
 	};
+
 }
 ```
+
 
 ```C++
 #include "bmpheader.hpp"
 
-
-class Bmp {
-public:
-	void save_sample(std::string file_name = "sample.bmp") {
-		for (int32_t x = 0; x < get_width(); x++)
-			for (int32_t y = 0; y < get_height(); y++)
-				*px_ptr(x, y) = {uint8_t(x + y), 50, uint8_t(y * 0.3)};
-
-		save(file_name);
-	}
-}
-
-
-void unit_test() {
-	{
-		Bmp bmp(512, 512);
-
-		bmp.save_sample();
-
-		bmp.clear_pixel();
-		bmp.read("sample.bmp");
-		bmp.save("read.bmp");
-	}
+int main() {
+	using namespace BmpHpp;
 
 	for (int32_t count = 20; count <= 45; count += 1) {
-		Bmp bmp(count, count);
+		Bmp bmp(count, count / 2);
 
 		for (int32_t x = 10; x < std::min(30, bmp.get_width()); x++)
 			for (int32_t y = 10; y < std::min(30, bmp.get_height()); y++)
