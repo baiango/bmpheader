@@ -32,7 +32,7 @@ public:
 			uint16_t color_plane_count = 1;
 			// Most decoder can't read 3 channels, and it's buggy
 			// So I made it 4 channels instead
-			uint16_t color_depth = 8 * 4;
+			uint16_t color_depth = 8 * 3;
 			uint32_t compress_method = 0;
 			uint32_t raw_bitmap_size = 0;
 			int32_t horizonal_resolution = 0;
@@ -48,8 +48,12 @@ public:
 	union Col8 {
 		struct {
 			uint8_t r;
-			uint8_t	g;
+			uint8_t g;
 			uint8_t b;
+			uint8_t a;
+		};
+		struct {
+			uint8_t rgb[3];
 			uint8_t a;
 		};
 		uint32_t rgba = 0x202020ff;
@@ -148,7 +152,7 @@ public:
 	}
 
 	bool read(std::string file_name) {
-		// IFStream Input File Stream
+		// IFStream: Input File Stream
 		std::ifstream file(file_name, std::ios::binary);
 
 		if (not file) {
@@ -165,8 +169,8 @@ public:
 			return false;
 		}
 
-		if (info.color_depth != 8 * 4) {
-			std::cerr << "Not a 32-bit or RGBA BMP file." << std::endl;
+		if (info.color_depth != 8 * 3) {
+			std::cerr << "Not a 24-bit or RGB BMP file." << std::endl;
 			return false;
 		}
 
@@ -174,6 +178,8 @@ public:
 			std::cerr << "Not an uncompressed BMP file." << std::endl;
 			return false;
 		}
+
+		resize(get_width(), get_height());
 
 		file.seekg(header.pixel_data_offset);
 		for (int32_t x = 0; x < get_width(); x++)
@@ -193,16 +199,19 @@ public:
 	}
 
 	void save(std::string file_name) {
-		// OFStream Output File Stream
+		// OFStream: Output File Stream
 		std::ofstream file(file_name, std::ios::binary);
 
 		file.write((char *)&header, 14);
 		file.write((char *)&info, 40);
 
+		int32_t row_size = get_width() * info.color_depth / 8;
+		int32_t row_padding_size = (4 - (row_size % 4)) % 4;
 		for (int32_t x = 0; x < get_width(); x++) {
 			for (int32_t y = 0; y < get_height(); y++) {
-				file.write((char *)px_ptr(x, y), 4);
+				file.write((char *)px_ptr(x, y), 3);
 			}
+			file.write("\0\0\0\0", row_padding_size);
 		}
 
 		file.close();

@@ -25,6 +25,11 @@ void unit_test() {
 
 		bmp.save(std::to_string(count) + ".bmp");
 	}
+
+		Bmp bmp(256, 256);
+
+		bmp.read("sample.bmp");
+		bmp.save("aaa.bmp");
 }
 
 
