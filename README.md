@@ -19,9 +19,6 @@ public:
 			uint8_t b;
 			uint8_t a;
 		};
-		struct {
-			uint8_t rgb[3];
-		};
 		uint32_t rgba = 0x202020ff;
 	};
 
@@ -32,7 +29,7 @@ public:
 ```C++
 #include "bmpheader.hpp"
 
-int main() {
+void md_example() {
 	using namespace BmpHpp;
 
 	for (int32_t count = 20; count <= 45; count += 1) {
@@ -40,10 +37,10 @@ int main() {
 
 		for (int32_t x = 10; x < std::min(30, bmp.get_width()); x++)
 			for (int32_t y = 10; y < std::min(30, bmp.get_height()); y++)
-				bmp.xy(x, y)
-				.r(x)
-				.g(y * 10)
-				.b(x * 30);
+				bmp.xy(x, y).get_value()
+				->r(x)
+				->g(y * 10)
+				->b(x * 30);
 
 		bmp.save(std::to_string(count) + ".bmp");
 	}

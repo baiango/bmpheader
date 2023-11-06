@@ -13,8 +13,11 @@
 
 namespace BmpHpp {
 	template <typename T, typename E>
-	class Result {
-	public:
+	struct Result {
+		bool ok;
+		T ok_value;
+		E err_value;
+
 		Result(T value) : ok(true), ok_value(value), err_value() {}
 		Result(E error) : ok(false), ok_value(), err_value(error) {}
 
@@ -23,11 +26,6 @@ namespace BmpHpp {
 
 		T get_value() { return ok_value; }
 		E get_err() { return err_value; }
-
-	private:
-		bool ok;
-		T ok_value;
-		E err_value;
 	};
 
 
@@ -69,11 +67,14 @@ namespace BmpHpp {
 				uint8_t b;
 				uint8_t a;
 			};
-			struct {
-				uint8_t rgb[3];
-			};
 			uint32_t rgba = 0x202020ff;
 		};
+
+		Bmp(int32_t new_width, int32_t new_height) {
+			resize(new_width, new_height);
+		}
+
+		Bmp() {}
 
 		// ----- Variables ------ //
 		const char BM_signature[2] = {'B', 'M'}; // No null terminated warning!
@@ -85,10 +86,6 @@ namespace BmpHpp {
 		int32_t data_cursor_x = 0;
 		int32_t data_cursor_y = 0;
 
-		Bmp(int32_t new_width, int32_t new_height) {
-			resize(new_width, new_height);
-		}
-
 		void resize(int32_t new_width, int32_t new_height) {
 			info.width = new_width;
 			info.height = new_height;
@@ -98,7 +95,8 @@ namespace BmpHpp {
 			for (int32_t x = 0; x < get_width(); x++) {
 				pixels[x].resize(get_height());
 				for (int32_t y = 0; y < get_height(); y++) {
-					set_pixel(x, y, 0x20);
+					if (xy(x, y).is_ok())
+						xy(x, y).get_value()->r(0x20);
 				}
 			}
 		}
@@ -123,65 +121,52 @@ namespace BmpHpp {
 
 		Result<Col8 *, bool> get_pixel_reference(int32_t x, int32_t y) {
 			if (bound_check(x, y))
-				return Result<Col8 *, bool>(&pixels[x][y]);
-			return Result<Col8 *, bool>(false);
+				return &pixels[x][y];
+			return false;
 		}
 
 		Result<Col8 *, bool>px_ptr(int32_t x, int32_t y) {
 			return get_pixel_reference(x, y);
 		}
 
-		void set_pixel(int32_t x, int32_t y, uint8_t gray) {
-			pixels[x][y] = Col8{gray, gray, gray};
+		Result<Bmp *, bool>set_data_cursor_position(int32_t new_x, int32_t new_y) {
+			if (bound_check(data_cursor_x, data_cursor_y)) {
+				data_cursor_x = new_x;
+				data_cursor_y = new_y;
+				return this;
+			}
+			return false;
 		}
 
-		void set_pixel(int32_t x, int32_t y, Col8 col) {
-			pixels[x][y] = col;
-		}
-
-		void set_pixel(
-			int32_t x, int32_t y,
-			uint8_t red, uint8_t green, uint8_t blue
-		) {
-			pixels[x][y] = {red, green, blue};
-		}
-
-		void set_pixel(
-			int32_t x, int32_t y,
-			uint8_t red, uint8_t green, uint8_t blue,
-			uint8_t alpha
-		) {
-			pixels[x][y] = {red, green, blue, alpha};
-		}
-
-		Bmp &set_data_cursor_position(int32_t new_x, int32_t new_y) {
-			data_cursor_x = new_x;
-			data_cursor_y = new_y;
-			return *this;
-		}
-
-		Bmp &xy(int32_t x, int32_t y) {
+		Result<Bmp *, bool>xy(int32_t x, int32_t y) {
 			return set_data_cursor_position(x, y);
 		}
 
-		Bmp &r(uint8_t new_red) {
+		Bmp *gray(uint8_t new_gray) {
+			pixels[data_cursor_x][data_cursor_y].r = new_gray;
+			pixels[data_cursor_x][data_cursor_y].g = new_gray;
+			pixels[data_cursor_x][data_cursor_y].b = new_gray;
+			return this;
+		}
+
+		Bmp *r(uint8_t new_red) {
 			pixels[data_cursor_x][data_cursor_y].r = new_red;
-			return *this;
+			return this;
 		}
 
-		Bmp &g(uint8_t new_green) {
+		Bmp *g(uint8_t new_green) {
 			pixels[data_cursor_x][data_cursor_y].g = new_green;
-			return *this;
+			return this;
 		}
 
-		Bmp &b(uint8_t new_blue) {
+		Bmp *b(uint8_t new_blue) {
 			pixels[data_cursor_x][data_cursor_y].b = new_blue;
-			return *this;
+			return this;
 		}
 
-		Bmp &a(uint8_t new_alpha) {
+		Bmp *a(uint8_t new_alpha) {
 			pixels[data_cursor_x][data_cursor_y].a = new_alpha;
-			return *this;
+			return this;
 		}
 
 		void clear_pixel() {
@@ -252,5 +237,9 @@ namespace BmpHpp {
 				file.write("\0\0\0\0", row_padding_size);
 			}
 		}
+	};
+
+	class Heatmap {
+
 	};
 }
