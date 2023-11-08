@@ -3,12 +3,12 @@ The first library known that will display your algorithm(e.g. Perlin) in 8-bit R
 Made in C++14. It might have bugs, so it's best to use 1:1 ratio to draw your image.  
 
 ## Usage
-You can set the pixel by gray, Col8, or r, g, b, and a uint8_t with set_pixel(),  
-or set the color cursor position by set_data_cursor_position() or xy() and chain it with r(), g(), b(), or a(),  
+You can set the color cursor position by set_data_cursor_position() or xy()  
+and chain it with r(), g(), b(), or a(),  
 or you can set it by reference from "*px_ptr(x, y)".  
 
-The Col8 is a union. To set the color with .rgba, use this format "0xrrggbbaa".  
-You can do it with .r, .g, .b, and .a as well.
+To set the color in Col888, use .r, .g, .b, and .a or  
+use this format "Col888{rr, gg, bb}".  
 ```C++
 class Bmp {
 public:
