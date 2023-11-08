@@ -3,42 +3,63 @@
 
 
 /*
-clang++ -g -O1 -D LIBFUZZER -fsanitize=fuzzer,address main.cpp
-set ASAN_OPTIONS=detect_container_overflow=0
+// It trigger on std::string or std::to_string(), so don't use the ASan
+//clang++ -g -O1 -D LIBFUZZER -fsanitize=fuzzer,address -fno-omit-frame-pointer main.cpp
+//set ASAN_OPTIONS=detect_container_overflow=0
+clang++ -g -O1 -D LIBFUZZER -fsanitize=fuzzer -fno-omit-frame-pointer main.cpp
 a
 */
+uint64_t iteration_counter = 0;
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t Data[], size_t Size) {
-	using namespace BmpHpp;
-
 	if (Size < 4 * 4) {
 		return 0;
 	}
+	using namespace BmpHpp;
+
+	Img24 bmp(512, 512);
+
+	// Check that fuzzer is working
+	for (int32_t x = 10; x < std::min(30, bmp.get_width()); x++) {
+		for (int32_t y = 10; y < std::min(30, bmp.get_height()); y++) {
+			Result<Img24 *, bool> pixel = bmp.xy(x, y);
+			if (pixel.is_ok())
+				pixel.get_value()
+				->r(x)
+				->g(y * 10)
+				->b(x * 30);
+		}
+	}
+
 	int32_t x, y;
-	memcpy(&x, Data, 4);
-	memcpy(&y, &Data[4], 4);
-
 	uint8_t r, g, b;
-	memcpy(&r, &Data[8], 1);
-	memcpy(&g, &Data[9], 1);
-	memcpy(&b, &Data[10], 1);
 
-	std::string file_name((char *)&Data[12], 4);
+	for (uint32_t i = 0; i < 1000; i++) {
+		size_t data_index = i * 1;
+		if (data_index + 16 > Size)
+			continue;
 
-	Bmp bmp(512, 512);
+		memcpy(&x, &Data[0 + data_index], 4);
+		memcpy(&y, &Data[4 + data_index], 4);
 
-	Result<Bmp::Col8 *, bool> pixel = bmp.px_ptr(x, y);
-	if (pixel.is_ok())
-		*(pixel.get_value()) = {r, g, b};
+		memcpy(&r, &Data[8 + data_index], 1);
+		memcpy(&g, &Data[9 + data_index], 1);
+		memcpy(&b, &Data[10 + data_index], 1);
 
-	bmp.save(file_name + ".bmp");
+		x = (uint32_t)x % bmp.get_width();
+		y	= (uint32_t)y % bmp.get_height();
+		Result<Col888 *, bool> pixel = bmp.px_ptr(x, y);
+		if (pixel.is_ok())
+			*(pixel.get_value()) = {r, g, b};
+	}
+	bmp.save(std::to_string(iteration_counter) + ".bmp");
+	iteration_counter++;
 	return 0;
 }
-
 
 void unit_test() {
 	using namespace BmpHpp;
 	{
-		Bmp bmp(512, 512);
+		Img24 bmp(512, 512);
 
 		bmp.save_sample();
 
@@ -48,7 +69,7 @@ void unit_test() {
 		bmp.save("read.bmp");
 	}
 	{
-		Bmp bmp;
+		Img24 bmp;
 
 		bmp.read("sample.bmp");
 		bmp.save("aaa.bmp");
@@ -59,7 +80,7 @@ void md_example() {
 	using namespace BmpHpp;
 
 	for (int32_t count = 20; count <= 45; count += 1) {
-		Bmp bmp(count, count / 2);
+		Img24 bmp(count, count / 2);
 
 		for (int32_t x = 10; x < std::min(30, bmp.get_width()); x++)
 			for (int32_t y = 10; y < std::min(30, bmp.get_height()); y++)
