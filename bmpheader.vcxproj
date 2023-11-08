@@ -139,8 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bmpheader.hpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="blake3_reader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="blake3_reader.hpp" />
+    <ClInclude Include="bmpheader.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
