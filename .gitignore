@@ -3,3 +3,6 @@ x64
 *.bmp
 a.*
 crash-*
+coverage_report
+*.profdata
+*.profraw

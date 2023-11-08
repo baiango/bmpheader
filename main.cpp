@@ -2,6 +2,19 @@
 #include <array>
 
 
+/* Code coverage
+clang++ -fprofile-instr-generate -fcoverage-mapping main.cpp
+a
+llvm-profdata merge -sparse default.profraw -o default.profdata
+
+// Detailed
+llvm-cov show a.exe -instr-profile=default.profdata
+// Summary
+llvm-cov report a.exe -instr-profile=default.profdata
+// HTML
+mkdir coverage_report && llvm-cov show -format=html -o coverage_report -instr-profile=default.profdata a.exe
+*/
+
 /*
 // It trigger on std::string or std::to_string(), so don't use the ASan
 //clang++ -g -O1 -D LIBFUZZER -fsanitize=fuzzer,address -fno-omit-frame-pointer main.cpp
@@ -46,7 +59,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t Data[], size_t Size) {
 		memcpy(&b, &Data[10 + data_index], 1);
 
 		x = (uint32_t)x % bmp.get_width();
-		y	= (uint32_t)y % bmp.get_height();
+		y = (uint32_t)y % bmp.get_height();
 		Result<Col888 *, bool> pixel = bmp.px_ptr(x, y);
 		if (pixel.is_ok())
 			*(pixel.get_value()) = {r, g, b};
@@ -104,6 +117,19 @@ uint64_t hash(const char *key) {
 	return hash;
 }
 
+// This is the alternate of the libfuzzer,
+// which is way better than libfuzzer because it generates completely random data
+// rather than targeted data
+std::array<uint8_t, 4096> generate_random_numbers() {
+	srand(unsigned int(time(nullptr)));
+	std::array<uint8_t, 4096> data;
+
+	for (auto &byte : data) {
+		byte = (uint8_t)rand() % 256;
+	}
+
+	return data;
+}
 
 void unit_test2() {
 	using namespace BmpHpp;
