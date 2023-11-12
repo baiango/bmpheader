@@ -15,6 +15,12 @@
 namespace BmpHpp {
 	const char BM_signature[2] = {'B', 'M'}; // No null terminated warning!
 
+	// You need "static" for declearing the functions in the header
+	// to stop the compiler from compiling the function multiple times
+	static void report_error(std::string msg) {
+		std::cerr << msg << std::endl;
+	}
+
 	template <typename T, typename E>
 	struct Result {
 		bool ok;
@@ -27,7 +33,13 @@ namespace BmpHpp {
 		bool is_ok() { return ok; }
 		bool is_err() { return not ok; }
 
-		T get_value() { return ok_value; }
+		T get_value() {
+			if (is_err()) {
+				report_error("Error: found not ok while calling get_value()");
+				return T();
+			}
+			return ok_value;
+		}
 		E get_err() { return err_value; }
 	};
 
@@ -70,10 +82,10 @@ namespace BmpHpp {
 	};
 
 	struct Col8888 {
-			uint8_t r;
-			uint8_t g;
-			uint8_t b;
-			uint8_t a;
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+		uint8_t a;
 
 		Col8888() : r(0x20), g(0x20), b(0x20), a(0xff) {}
 		Col8888(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(0xff) {}
@@ -113,7 +125,6 @@ namespace BmpHpp {
 
 		int32_t get_width() { return info.width; }
 		int32_t get_height() { return info.height; }
-		Col888 get_pixel(int32_t x, int32_t y) { return pixels[x][y]; }
 
 		bool bound_check(int32_t x, int32_t y) {
 			if (x >= 0 && x < get_width() && y >= 0 && y < get_height())
@@ -145,6 +156,10 @@ namespace BmpHpp {
 		}
 
 		Img24 *gray(uint8_t new_gray) {
+			if (this == nullptr) {
+				report_error("Found Img24 nullptr in gray()! Ignoring...");
+				return nullptr;
+			}
 			pixels[data_cursor_x][data_cursor_y].r = new_gray;
 			pixels[data_cursor_x][data_cursor_y].g = new_gray;
 			pixels[data_cursor_x][data_cursor_y].b = new_gray;
@@ -152,16 +167,28 @@ namespace BmpHpp {
 		}
 
 		Img24 *r(uint8_t new_red) {
+			if (this == nullptr) {
+				report_error("Found Img24 nullptr in r()! Ignoring...");
+				return nullptr;
+			}
 			pixels[data_cursor_x][data_cursor_y].r = new_red;
 			return this;
 		}
 
 		Img24 *g(uint8_t new_green) {
+			if (this == nullptr) {
+				report_error("Found Img24 nullptr in g()! Ignoring...");
+				return nullptr;
+			}
 			pixels[data_cursor_x][data_cursor_y].g = new_green;
 			return this;
 		}
 
 		Img24 *b(uint8_t new_blue) {
+			if (this == nullptr) {
+				report_error("Found Img24 nullptr in b()! Ignoring...");
+				return nullptr;
+			}
 			pixels[data_cursor_x][data_cursor_y].b = new_blue;
 			return this;
 		}
@@ -177,7 +204,7 @@ namespace BmpHpp {
 			std::ifstream file(file_name, std::ios::binary);
 
 			if (not file) {
-				std::cerr << "Failed to open the file." << std::endl;
+				report_error("Failed to open the " + file_name + " file.");
 				return false;
 			}
 
@@ -186,17 +213,17 @@ namespace BmpHpp {
 
 			if (header.signature[0] != BM_signature[0]
 				&& header.signature[1] != BM_signature[1]) {
-				std::cerr << "Not a BMP file." << std::endl;
+				report_error(file_name + " is not a BMP file.");
 				return false;
 			}
 
 			if (info.color_depth != 8 * 3) {
-				std::cerr << "Not a 24-bit or RGB BMP file." << std::endl;
+				report_error(file_name + "is not a 24-bit or RGB BMP file.");
 				return false;
 			}
 
 			if (info.compress_method) {
-				std::cerr << "Not an uncompressed BMP file." << std::endl;
+				report_error(file_name + "is not an uncompressed BMP file.");
 				return false;
 			}
 
@@ -208,14 +235,6 @@ namespace BmpHpp {
 					file.read((char *)px_ptr(x, y).get_value(), info.color_depth / 8);
 
 			return true;
-		}
-
-		void save_sample(std::string file_name = "sample.bmp") {
-			for (int32_t x = 0; x < get_width(); x++)
-				for (int32_t y = 0; y < get_height(); y++)
-					*px_ptr(x, y).get_value() = {uint8_t(x + y), 50, uint8_t(y * 0.3)};
-
-			save(file_name);
 		}
 
 		void save(std::string file_name) {
@@ -233,6 +252,18 @@ namespace BmpHpp {
 				}
 				file.write("\0\0\0\0", row_padding_size);
 			}
+		}
+
+		void save_sample(std::string file_name = "sample.bmp") {
+			for (int32_t x = 0; x < get_width(); x++)
+				for (int32_t y = 0; y < get_height(); y++)
+					*px_ptr(x, y).get_value() = {uint8_t(x + y), 50, uint8_t(y * 0.3)};
+
+			save(file_name);
+		}
+
+		void read_sample(std::string file_name = "sample.bmp") {
+			read(file_name);
 		}
 	};
 
