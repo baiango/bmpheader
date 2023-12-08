@@ -2,14 +2,19 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 
-
 VecCol888 new_veccol888(size_t size) {
 	VecCol888 v;
 	v.data = malloc(size * sizeof(VecCol888));
 	v.size = size;
 	// The reason it's gray is cuz easier to debug your own software
-	for (size_t i = 0; i < v.size; i++) { v.data[i] = (Col888){0x20, 0x20, 0x20}; }
+	fill_vecol888(&v.data, (Col888){0x20, 0x20, 0x20});
 	return v;
+}
+
+void fill_vecol888(VecCol888 *v, Col888 color) {
+	for (size_t i = 0; i < v->size; i++) {
+		v->data[i] = color;
+	}
 }
 
 Bmp888 new_base_bmp() {
@@ -81,10 +86,10 @@ bool save_bmp(Bmp888 *bmp, char *filename) {
 }
 
 Bmp888 load_bmp(const char *filename) {
-	if (filename == NULL) { return (Bmp888) { .ok = false }; }
+	if (filename == NULL) { goto null_error; }
 
 	FILE *file = fopen(filename, "rb");
-	if (file == NULL) { return (Bmp888) { .ok = false }; }
+	if (file == NULL) { goto null_error; }
 
 	// Read the header
 	Bmp888 bmp = new_base_bmp();
@@ -110,5 +115,6 @@ Bmp888 load_bmp(const char *filename) {
 	return bmp;
 file_error:
 	fclose(file);
-	return new_bmp(0, 0);
+null_error:
+	return (Bmp888) { .ok = false };
 }

@@ -52,6 +52,7 @@ typedef struct {
 } Bmp888;
 
 VecCol888 new_veccol888(size_t size);
+void fill_vecol888(VecCol888 *v, Col888 color);
 Bmp888 new_base_bmp();
 Bmp888 new_bmp(int32_t width, int32_t height);
 void free_bmp(Bmp888 *bmp);
