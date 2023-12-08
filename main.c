@@ -1,22 +1,3 @@
-# Bmpheader
-The first library known that will display your algorithm(e.g. Perlin) in 24-bit RGB channels, and it doesn't require a Ph.D. in mathematics to understand it.  
-Made in C11.
-
-## Usage
-You can set the color by reference from "*px_ptr(&bmp, x, y)".  
-
-To set the color in Col888, use .r, .g, and .b or  
-use this format "(Col888){r, g, b}".  
-```C++
-typedef struct {
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-} Col888;
-```
-
-
-```C
 #include "bmpheader.h"
 
 
@@ -26,7 +7,7 @@ int32_t main() {
 		uint8_t num = 0;
 		for (uint32_t i = 0; i < 30; i++) {
 			for (uint32_t j = 0; j < 30; j++) {
-				Col888 *px = get_pixel(&bmp, i, j);
+				Col888 *px = px_ptr(&bmp, i, j);
 				*px = (Col888){num, i * 8, j * 16};
 				printf("(%d, %d, %d) ", px->r, px->g, px->b);
 				num++;
@@ -44,4 +25,3 @@ int32_t main() {
 	}
 	return 0;
 }
-```
